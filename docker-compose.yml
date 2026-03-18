@@ -1,0 +1,95 @@
+services:
+
+  php:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: factory_php
+    working_dir: /var/www/backend
+    volumes:
+      - ./backend:/var/www/backend
+    networks:
+      - factory_net
+    depends_on:
+      - mysql
+      - redis
+    restart: unless-stopped
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+
+  nginx:
+    image: nginx:alpine
+    container_name: factory_nginx
+    ports:
+      - "8001:80"
+    volumes:
+      - ./backend:/var/www/backend
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - factory_net
+    depends_on:
+      - php
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.0
+    container_name: factory_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: factory_db
+      MYSQL_USER: factory_user
+      MYSQL_PASSWORD: factory_pass
+    ports:
+      - "3308:3306"
+    volumes:
+      - factory_mysql_data:/var/lib/mysql
+    networks:
+      - factory_net
+    restart: unless-stopped
+
+  redis:
+    image: redis:alpine
+    container_name: factory_redis
+    ports:
+      - "6380:6379"
+    networks:
+      - factory_net
+    restart: unless-stopped
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: factory_phpmyadmin
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: factory_user
+      PMA_PASSWORD: factory_pass
+    networks:
+      - factory_net
+    depends_on:
+      - mysql
+    restart: unless-stopped
+
+  vue:
+    image: node:20-alpine
+    container_name: factory_vue
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "5174:5173"
+    networks:
+      - factory_net
+    command: sh -c "npm install && npm run dev -- --host"
+    restart: unless-stopped
+
+volumes:
+  factory_mysql_data:
+
+networks:
+  factory_net:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: "true"
