@@ -16,6 +16,7 @@ export default defineConfig({
     hmr: {
       clientPort: 5174,
     },
+    allowedHosts: ["factory.my-yca.com"],
     proxy: {
       "/api": {
         target: "http://nginx:80",
