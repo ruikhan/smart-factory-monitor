@@ -1,15 +1,15 @@
+import "@mdi/font/css/materialdesignicons.css"
 import axios from "axios"
 import { createPinia } from "pinia"
 import { createApp } from "vue"
 import { createVuetify } from "vuetify"
 import * as components from "vuetify/components"
 import * as directives from "vuetify/directives"
+import "vuetify/styles"
 import App from "./App.vue"
 import router from "./router"
-import "@mdi/font/css/materialdesignicons.css"
-import "vuetify/styles"
 
-axios.defaults.baseURL = import.meta.env.PROD ? "https://api.factory.com" : ""
+axios.defaults.baseURL = import.meta.env.PROD ? "https://api.factory.my-yca.com" : ""
 axios.defaults.headers.common["Accept"] = "application/json"
 
 const vuetify = createVuetify({
